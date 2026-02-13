@@ -23,9 +23,9 @@ class BagOfWords(FeatureMap):
 
     @classmethod
     def featurize(self, text: str) -> Dict[str, float]:
-        # TODO: implement this! Expected # of lines: <5
-        raise NotImplementedError
-        return self.prefix_with_name({})
+        words = text.lower().split()
+        filtered_by_stop_words = [word for word in words if word not in self.STOP_WORDS]
+        return self.prefix_with_name({word: 1.0 for word in filtered_by_stop_words})
 
 
 class SentenceLength(FeatureMap):
@@ -44,7 +44,20 @@ class SentenceLength(FeatureMap):
         return self.prefix_with_name(ret)
 
 
-FEATURE_CLASSES_MAP = {c.name: c for c in [BagOfWords, SentenceLength]}
+class Bigram(FeatureMap):
+    name = "bigram"
+
+    @classmethod
+    def featurize(self, text: str) -> Dict[str, float]:
+        words = text.lower().split()
+        filtered = [word for word in words if word not in self.STOP_WORDS]
+        features = {}
+        for i in range(len(filtered)-1):
+            features[f"{filtered[i]}_{filtered[i+1]}"] = 1.0
+        return self.prefix_with_name(features)
+
+
+FEATURE_CLASSES_MAP = {c.name: c for c in [BagOfWords, Bigram]}
 
 
 def make_featurize(
